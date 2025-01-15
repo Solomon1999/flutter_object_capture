@@ -26,7 +26,7 @@ struct CaptureView: View {
                     }
 
                     CreateButton(label: "Finish") {
-                        session.fini sh()
+                        session.finish()
                     }
                 }
             } 
