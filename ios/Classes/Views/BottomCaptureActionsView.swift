@@ -2,13 +2,14 @@ import RealityKit
 import SwiftUI
 import os
 
-private let logger = Logger(subsystem: FlutterObjectCapturePlugin.subsystem, category: "BottomCaptureActionsView")
+private let logger = Logger(
+    subsystem: FlutterObjectCapturePlugin.subsystem, category: "BottomCaptureActionsView")
 
 struct BottomCaptureActionsView: View, OverlayButtons {
     var session: ObjectCaptureSession
     @Binding var captureMode: CaptureMode
     @Binding var isObjectFlipped: Bool
-    
+
     @Binding var hasDetectionFailed: Bool
     @Binding var showCaptureModeGuidance: Bool
     @Binding var showTutorialView: Bool
@@ -18,46 +19,48 @@ struct BottomCaptureActionsView: View, OverlayButtons {
         HStack(alignment: .center) {
             HStack {
                 switch session.state {
-                    case .ready:
-                        HelpButton()
-                            .frame(width: 30)
-                    case .detecting:
-                        ResetBoundingBoxButton(session: session)
-                    default:
-                        NumOfImagesButton(session: session)
-                            .rotationEffect(rotationAngle)
-                        Spacer()
+                case .ready:
+                    HelpButton()
+                        .frame(width: 30)
+                case .detecting:
+                    ResetBoundingBoxButton(session: session)
+                default:
+                    NumOfImagesButton(session: session)
+                        .rotationEffect(rotationAngle)
+                    Spacer()
                 }
             }
             .frame(maxWidth: .infinity)
 
             if !isCapturingStarted(state: session.state) {
-                CaptureButton(session: session,
-                              captureMode: $captureMode,
-                              isObjectFlipped: $isObjectFlipped,
-                              hasDetectionFailed: $hasDetectionFailed,
-                              showTutorialView: $showTutorialView)
-                    .frame(width: 200)
+                CaptureButton(
+                    session: session,
+                    captureMode: $captureMode,
+                    isObjectFlipped: $isObjectFlipped,
+                    hasDetectionFailed: $hasDetectionFailed,
+                    showTutorialView: $showTutorialView
+                )
+                .frame(width: 200)
             }
 
             HStack {
                 switch session.state {
-                    case .ready:
-//                    if appModel.orbit == .orbit1 {
-                        CaptureModeButton(
-                            session: session, captureMode: $captureMode,
-                            showCaptureModeGuidance: $showCaptureModeGuidance
-                        )
-                        .frame(width: 30)
-//                    }
-                    case .detecting:
-                        AutoDetectionStateView(session: session)
-                    default:
-                        HStack {
-                            Spacer()
-                            AutoCaptureToggle(session: session)
-                            ManualShotButton(session: session)
-                        }
+                case .ready:
+                    //                    if appModel.orbit == .orbit1 {
+                    CaptureModeButton(
+                        session: session, captureMode: $captureMode,
+                        showCaptureModeGuidance: $showCaptureModeGuidance
+                    )
+                    .frame(width: 30)
+                //                    }
+                case .detecting:
+                    AutoDetectionStateView(session: session)
+                default:
+                    HStack {
+                        // Spacer()
+                        AutoCaptureToggle(session: session)
+                        ManualShotButton(session: session)
+                    }
                 }
             }
             .frame(maxWidth: .infinity)
@@ -71,20 +74,23 @@ private struct HelpButton: View {
     @State private var showHelpPageView: Bool = false
 
     var body: some View {
-        Button(action: {
-            logger.log("\(LocalizedString.help) button clicked!")
-            withAnimation {
-                showHelpPageView = true
+        Button(
+            action: {
+                logger.log("\(LocalizedString.help) button clicked!")
+                withAnimation {
+                    showHelpPageView = true
+                }
+            },
+            label: {
+                Image(systemName: "questionmark.circle")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 22)
+                    .foregroundColor(.white)
+                    .padding(20)
+                    .contentShape(.rect)
             }
-        }, label: {
-            Image(systemName: "questionmark.circle")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 22)
-                .foregroundColor(.white)
-                .padding(20)
-                .contentShape(.rect)
-        })
+        )
         .padding(-20)
         .sheet(isPresented: $showHelpPageView) {
             HelpPageView(showHelpPageView: $showHelpPageView)
@@ -104,7 +110,9 @@ private struct HelpButton: View {
             "Help (Object Capture)",
             bundle: Bundle.main,
             value: "Help",
-            comment: "Title for the Help button on the object capture screen to show the tutorial pages.")
+            comment:
+                "Title for the Help button on the object capture screen to show the tutorial pages."
+        )
     }
 }
 
@@ -135,13 +143,12 @@ private struct CaptureButton: View {
 
     private var buttonLabel: String {
         if session.state == .ready {
-            return LocalizedString.continue
-//            switch appModel.captureMode {
-//                case .object:
-//                    return LocalizedString.continue
-//                case .area:
-//                    return LocalizedString.startCapture
-//            }
+            switch captureMode {
+            case .object:
+                return LocalizedString.continue
+            case .area:
+                return LocalizedString.startCapture
+            }
         } else {
             if !isObjectFlipped {
                 return LocalizedString.startCapture
@@ -183,14 +190,16 @@ private struct AutoDetectionStateView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            let imageName = session.feedback.contains(.objectNotDetected) ? "eye.slash.circle" : "eye.circle"
+            let imageName =
+                session.feedback.contains(.objectNotDetected) ? "eye.slash.circle" : "eye.circle"
             Image(systemName: imageName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .padding(5)
                 .frame(width: 30)
             if UIDevice.current.userInterfaceIdiom == .pad {
-                let text = session.feedback.contains(.objectNotDetected) ? "Not Detected" : "Detected"
+                let text =
+                    session.feedback.contains(.objectNotDetected) ? "Not Detected" : "Detected"
                 Text(text)
                     .frame(width: 90)
                     .font(.footnote)
@@ -227,7 +236,8 @@ private struct ResetBoundingBoxButton: View {
                 }
                 .foregroundColor(.white)
                 .fontWeight(.semibold)
-            })
+            }
+        )
         .padding(.bottom, UIDevice.current.userInterfaceIdiom == .pad ? 0 : 15)
     }
 
@@ -266,8 +276,9 @@ private struct CaptureModeButton: View {
     @State private var captureModeGuidanceTimer: Timer? = nil
 
     var body: some View {
-        Button(action: {
-            switch captureMode {
+        Button(
+            action: {
+                switch captureMode {
                 case .object:
                     DispatchQueue.main.async {
                         logger.log("Area mode selected!")
@@ -278,39 +289,42 @@ private struct CaptureModeButton: View {
                         logger.log("Object mode selected!")
                         captureMode = .object
                     }
-            }
-            logger.log("Setting showCaptureModeGuidance to true")
-            withAnimation {
-                showCaptureModeGuidance = true
-            }
-            // Cancel the previous scheduled timer.
-            if captureModeGuidanceTimer != nil {
-                captureModeGuidanceTimer?.invalidate()
-                captureModeGuidanceTimer = nil
-            }
-            captureModeGuidanceTimer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false) {_ in
-                logger.log("Setting showCaptureModeGuidance to false")
-                withAnimation {
-                    showCaptureModeGuidance = false
                 }
-            }
-        }, label: {
-            VStack {
-                switch captureMode {
+                logger.log("Setting showCaptureModeGuidance to true")
+                withAnimation {
+                    showCaptureModeGuidance = true
+                }
+                // Cancel the previous scheduled timer.
+                if captureModeGuidanceTimer != nil {
+                    captureModeGuidanceTimer?.invalidate()
+                    captureModeGuidanceTimer = nil
+                }
+                captureModeGuidanceTimer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false)
+                { _ in
+                    logger.log("Setting showCaptureModeGuidance to false")
+                    withAnimation {
+                        showCaptureModeGuidance = false
+                    }
+                }
+            },
+            label: {
+                VStack {
+                    switch captureMode {
                     case .area:
                         Image(systemName: "circle.dashed")
                             .resizable()
                     case .object:
                         Image(systemName: "cube")
                             .resizable()
+                    }
                 }
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 22)
+                .foregroundStyle(.white)
+                .padding(20)
+                .contentShape(.rect)
             }
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 22)
-            .foregroundStyle(.white)
-            .padding(20)
-            .contentShape(.rect)
-        })
+        )
         .padding(-20)
     }
 }
@@ -322,39 +336,48 @@ private struct NumOfImagesButton: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        Button(action: {
-            showInfo = true
-        },
-               label: {
-            VStack(spacing: 8) {
-                Image(systemName: "photo")
-                    .padding([.horizontal, .top], 4)
-                    .overlay(alignment: Alignment(horizontal: .trailing, vertical: .top)) {
-                        if session.feedback.contains(.overCapturing) {
-                            Image(systemName: "circle.fill")
-                                .foregroundColor(.orange)
-                                .font(.caption2)
+        Button(
+            action: {
+                showInfo = true
+            },
+            label: {
+                VStack(spacing: 8) {
+                    Image(systemName: "photo")
+                        .padding([.horizontal, .top], 4)
+                        .overlay(alignment: Alignment(horizontal: .trailing, vertical: .top)) {
+                            if session.feedback.contains(.overCapturing) {
+                                Image(systemName: "circle.fill")
+                                    .foregroundColor(.orange)
+                                    .font(.caption2)
+                            }
                         }
-                    }
-                Text(String(format: LocalizedString.numOfImages,
+                    Text(
+                        String(
+                            format: LocalizedString.numOfImages,
                             session.numberOfShotsTaken,
-                            session.maximumNumberOfInputImages))
-                .font(.footnote)
-                .fontWidth(.condensed)
-                .fontDesign(.rounded)
-                .bold()
+                            session.maximumNumberOfInputImages)
+                    )
+                    .font(.footnote)
+                    .fontWidth(.condensed)
+                    .fontDesign(.rounded)
+                    .bold()
+                }
+                .foregroundColor(.white)
             }
-            .foregroundColor(.white)
-        })
+        )
         .popover(isPresented: $showInfo) {
             VStack(alignment: .leading, spacing: 20) {
                 Label(LocalizedString.photoLimit, systemImage: "photo")
                     .font(.headline)
-                Text(String(format: LocalizedString.createModelLimits,
-                            FlutterObjectCapturePlugin.minNumImages,
-                            session.maximumNumberOfInputImages))
-                Text(String(format: LocalizedString.captureMore,
-                            session.maximumNumberOfInputImages))
+                Text(
+                    String(
+                        format: LocalizedString.createModelLimits,
+                        FlutterObjectCapturePlugin.minNumImages,
+                        session.maximumNumberOfInputImages))
+                Text(
+                    String(
+                        format: LocalizedString.captureMore,
+                        session.maximumNumberOfInputImages))
             }
             .foregroundStyle(colorScheme == .light ? .black : .white)
             .padding()
@@ -377,7 +400,8 @@ private struct NumOfImagesButton: View {
         static let createModelLimits = NSLocalizedString(
             "To create a model on device you need a minimum of %d images and a maximum of %d images. (Object Capture)",
             bundle: Bundle.main,
-            value: "To create a model on device you need a minimum of %d images and a maximum of %d images.",
+            value:
+                "To create a model on device you need a minimum of %d images and a maximum of %d images.",
             comment: "Text to explain the photo limits in object capture.")
         static let captureMore = NSLocalizedString(
             "You can capture more than %d images and process them on your Mac. (Object Capture)",
@@ -391,45 +415,47 @@ private struct AutoCaptureToggle: View {
     var session: ObjectCaptureSession
 
     var body: some View {
-        Button(action: {
-            switch(session.state) {
-              case .ready:
-                let isDetecting = session.startDetecting()
-                if isDetecting {
-                  logger.info("Start detecting")
-                } else {
-                  logger.error("ERROR: Did not start detecting!")
-                }
-              case .capturing:
-                session.startCapturing()
-              default:
-                break
+        Button(
+            action: {
+                switch session.state {
+                case .ready:
+                    let isDetecting = session.startDetecting()
+                    if isDetecting {
+                        logger.info("Start detecting")
+                    } else {
+                        logger.error("ERROR: Did not start detecting!")
+                    }
+                case .capturing:
+                    session.startCapturing()
+                default:
+                    break
                 // session.isAutoCaptureEnabled.toggle()
-              }
-        }, label: {
-            HStack(spacing: 5) {
-                switch(session.state) {
+                }
+            },
+            label: {
+                HStack(spacing: 5) {
+                    switch session.state {
                     case .ready, .capturing:
-                      Image(systemName: "a.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 15)
-                        .foregroundStyle(.black)
+                        Image(systemName: "a.circle.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 15)
+                            .foregroundStyle(.black)
                     default:
-                      Image(systemName: "circle.slash.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 15)
-                        .foregroundStyle(.black)
+                        Image(systemName: "circle.slash.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 15)
+                            .foregroundStyle(.black)
                     }
                     Text("Auto")
-                      .font(.footnote)
-                      .foregroundStyle(.black)
-            }
-            .padding(.all, 5)
-            .background(.ultraThinMaterial)
-            .background([.ready, .capturing].contains(session.state) ? .white : .clear)
-            .cornerRadius(15)
-        })
+                        .font(.footnote)
+                        .foregroundStyle(.black)
+                }
+                .padding(.all, 5)
+                .background(.ultraThinMaterial)
+                .background([.ready, .capturing].contains(session.state) ? .white : .clear)
+                .cornerRadius(15)
+            })
     }
 }

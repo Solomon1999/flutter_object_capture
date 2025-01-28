@@ -60,15 +60,13 @@ class ObjectCaptureController {
 
     // ObjectCaptureConfiguration configuration,
   ) {
-    _channel = MethodChannel('arkit_$id');
+    _channel = MethodChannel('flutter_object_capture_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
-    // _channel.invokeMethod<void>('init', {
-    //   'configuration': configuration.index,
-    // });
+    _channel.invokeMethod<void>('startSession');
   }
 
   void dispose() {
-    _channel.invokeMethod<void>('dispose');
+    // _channel.invokeMethod<void>('dispose');
   }
 
   Future<void> _platformCallHandler(MethodCall call) {

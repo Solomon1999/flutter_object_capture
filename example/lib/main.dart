@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -57,21 +59,37 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text('Running on: $_platformVersion\n'),
-              Row(
+        body: Builder(
+          builder: (context) {
+            return SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text("Scan Object"),
+                  Text('Running on: $_platformVersion\n'),
+                  Row(
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return ObjectCapturePage(
+                                  onObjectCaptured: (url) {
+                                    log("Captured Object Path: $url");
+                                  },
+                                );
+                              },
+                            ),
+                          );
+                        },
+                        child: const Text("Scan Object"),
+                      )
+                    ],
                   )
                 ],
-              )
-            ],
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -97,7 +115,7 @@ class _ObjectCapturePageState extends State<ObjectCapturePage> {
 
   void onObjectCaptureInitialised(
       ObjectCaptureController objectCaptureController) {
-    controller = controller;
+    controller = objectCaptureController;
 
     controller.onCompleted = (path) {
       if (path == null) {
@@ -142,7 +160,9 @@ class _ObjectCapturePageState extends State<ObjectCapturePage> {
       appBar: AppBar(
         title: const Text("Object Capture Demo"),
       ),
+      extendBody: true,
       body: SafeArea(
+        bottom: false,
         child: ObjectCaptureView(
           onInitialiseObjectCapture: onObjectCaptureInitialised,
         ),

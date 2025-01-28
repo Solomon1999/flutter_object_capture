@@ -13,6 +13,8 @@ private let logger = Logger(subsystem: FlutterObjectCapturePlugin.subsystem, cat
 
 struct TopCaptureActionsView: View, OverlayButtons {
     var session: ObjectCaptureSession
+    var captureFolderManager: CaptureFolderManager?
+    
     @Binding var captureMode: CaptureMode
     
     var showCaptureModeGuidance: Bool
@@ -23,7 +25,10 @@ struct TopCaptureActionsView: View, OverlayButtons {
                 CaptureCancelButton()
                 Spacer()
                 if !isCapturingStarted(state: session.state) {
-                    CaptureFolderButton()
+                    CaptureFolderButton(
+                        objectCaptureSession: session,
+                        captureFolderManager: captureFolderManager
+                    )
                 }
             }
             .foregroundColor(.white)
@@ -62,6 +67,8 @@ private struct CaptureCancelButton: View {
 
 private struct CaptureFolderButton: View {
     var objectCaptureSession: ObjectCaptureSession?
+    var captureFolderManager: CaptureFolderManager?
+    
     @State  var showCaptureFolders: Bool = false
 
     var body: some View {
@@ -79,7 +86,10 @@ private struct CaptureFolderButton: View {
         })
         .padding(-20)
         .sheet(isPresented: $showCaptureFolders) {
-            GalleryView(showCaptureFolders: $showCaptureFolders)
+            GalleryView(
+                showCaptureFolders: $showCaptureFolders,
+                captureFolderManager: captureFolderManager
+            )
         }
         .onChange(of: showCaptureFolders) {
             if showCaptureFolders {
@@ -147,6 +157,7 @@ private struct GalleryView: View {
             .filter { $0.hasDirectoryPath }
             .sorted(by: { $0.path > $1.path })
         guard let folderURLs else { return nil }
+        print("FOLDER URLS: \(folderURLs)");
         return folderURLs
     }
 

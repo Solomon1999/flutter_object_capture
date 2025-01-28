@@ -11,6 +11,7 @@ import SwiftUI
 struct CaptureActionsView: View {
     var session: ObjectCaptureSession
     @Binding var captureMode: CaptureMode
+    var captureFolderManager: CaptureFolderManager?
     var messageList: TimedMessageList
     
     @Binding var isObjectFlipped: Bool
@@ -38,6 +39,7 @@ struct CaptureActionsView: View {
             VStack(spacing: 20) {
                 TopCaptureActionsView(
                     session: session,
+                    captureFolderManager: captureFolderManager,
                     captureMode: $captureMode,
                     showCaptureModeGuidance: showCaptureModeGuidance
                 )

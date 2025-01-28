@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>NSPrivacyTrackingDomains</key>
-	<array/>
-	<key>NSPrivacyAccessedAPITypes</key>
-	<array/>
-	<key>NSPrivacyCollectedDataTypes</key>
-	<array/>
-	<key>NSPrivacyTracking</key>
-	<false/>
-</dict>
+	<dict>
+		<key>NSPrivacyTrackingDomains</key>
+		<array/>
+		<key>NSPrivacyAccessedAPITypes</key>
+		<array/>
+		<key>NSPrivacyCollectedDataTypes</key>
+		<array/>
+		<key>NSPrivacyTracking</key>
+		<false/>
+		<key>NSCameraUsageDescription</key>
+		<string>Camera is mainly used for Object Image Capture</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Your app needs access to the photo library to select photos and videos.</string>
+	</dict>
 </plist>

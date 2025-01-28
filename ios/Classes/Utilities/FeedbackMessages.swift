@@ -12,7 +12,7 @@ import SwiftUI
 final class FeedbackMessages {
     /// Returns the human readable string to display for the given feedback.  If there are more than one feedback entries, they
     /// will be concatenated together on multi-lines ('\n\ separated).
-    static func getFeedbackString(for feedback: ObjectCaptureSession.Feedback, captureMode: AppDataModel.CaptureMode) -> String? {
+    static func getFeedbackString(for feedback: ObjectCaptureSession.Feedback, captureMode: CaptureMode) -> String? {
            switch feedback {
                case .objectTooFar:
                    if captureMode == .area { return nil }

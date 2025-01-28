@@ -4,18 +4,21 @@ import UIKit
 
 
 public class FlutterObjectCapturePlugin: NSObject, FlutterPlugin {
-  static let subsystem = "flutter_object_capture"
-  static let minNumImages = 10
+    static let subsystem = "flutter_object_capture"
+    static let minNumImages = 10
+    public static var registrar: FlutterPluginRegistrar? = nil
 
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(
-      name: "flutter_object_capture", binaryMessenger: registrar.messenger())
-    let instance = FlutterObjectCapturePlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
-  }
+    public static func register(with registrar: FlutterPluginRegistrar) {
+        FlutterObjectCapturePlugin.registrar = registrar
+        let objectCaptureFactory = FlutterObjectCaptureFactory(messenger: registrar.messenger())
+        registrar.register(objectCaptureFactory, withId: "flutter_object_capture")
 
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-  }
+        let channel = FlutterMethodChannel(name: "flutter_object_capture", binaryMessenger: registrar.messenger())
+        registrar.addMethodCallDelegate(FlutterObjectCapturePlugin(), channel: channel)
+    }
+
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    }
 }
 
 class FlutterObjectCaptureFactory: NSObject, FlutterPlatformViewFactory {

@@ -5,8 +5,13 @@
 //  Created by Oluwafemi Oyepeju on 20/01/2025.
 //
 
+import RealityKit
 import SwiftUI
 import QuickLook
+import os
+
+private let logger = Logger(subsystem: FlutterObjectCapturePlugin.subsystem, category: "ReconstructionView")
+
 
 private struct ARQuickLookController: UIViewControllerRepresentable {
     let modelFile: URL
@@ -179,7 +184,7 @@ struct ReconstructionView: View {
         VStack {
             if completed && !cancelled {
                 ARQuickLookController(modelFile: outputFile, endCaptureCallback: {
-                    dis
+                    
                 })
                 .onAppear(perform: {
                     UIApplication.shared.isIdleTimerDisabled = false
@@ -263,13 +268,13 @@ struct ReconstructionProgressView: View {
             actions: {
                 Button("OK") {
                     logger.log("Calling restart...")
-                    appModel.state = .restart
+//                    appModel.state = .restart
                 }
             },
             message: {}
         )
         .task {
-            precondition(appModel.state == .reconstructing)
+//            precondition(appModel.state == .reconstructing)
             assert(photogrammetrySession != nil)
             guard let session = photogrammetrySession else {
                 logger.error("Session unavailable from photogrammetry session.")

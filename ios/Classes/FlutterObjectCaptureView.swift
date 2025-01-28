@@ -7,69 +7,101 @@
 import Flutter
 import RealityKit
 import SwiftUI
+import os
+
+private let logger = Logger(subsystem: FlutterObjectCapturePlugin.subsystem, category: "FlutterObjectCaptureView")
 
 class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
     private var objectCaptureView: UIView
+    private var session: ObjectCaptureSession?
     let channel: FlutterMethodChannel
-    
-    init(withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger) {
+
+    init(
+        withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger
+    ) {
         objectCaptureView = UIView(frame: frame)
-        channel = FlutterMethodChannel(name: "object_capture_\(viewId)", binaryMessenger: msg)
-        
+        channel = FlutterMethodChannel(name: "flutter_object_capture_\(viewId)", binaryMessenger: msg)
+
         super.init()
-        
-        // objectCaptureView.delegate = self
+
         createNativeView(view: objectCaptureView)
         channel.setMethodCallHandler(onMethodCalled)
-        
     }
-    
-    func view() -> UIView { return objectCaptureView }
-    
-    func createNativeView(view _view: UIView){
-            // Create the native view for either UIKit or SwiftUI and add it to the Flutter view.
-            
-            // FOR UIKIT
-            // Uncomment the following code for UIKit integration.
-            /*
-            _view.backgroundColor = UIColor.blue
-            let nativeLabel = UILabel()
-            nativeLabel.text = "Native text from iOS"
-            nativeLabel.textColor = UIColor.white
-            nativeLabel.textAlignment = .center
-            nativeLabel.frame = CGRect(x: 0, y: 0, width: 180, height: 48.0)
-            _view.addSubview(nativeLabel)
-            */
-            
-            // FOR SWIFTUI
-            let keyWindows = UIApplication.shared.windows.first(where: { $0.isKeyWindow}) ?? UIApplication.shared.windows.first
-            let topController = keyWindows?.rootViewController
-            let vc = UIHostingController(rootView: CaptureView())
-            let swiftUiView = vc.view!
-            swiftUiView.translatesAutoresizingMaskIntoConstraints = false
-            
-            topController?.addChild(vc)
-            _view.addSubview(swiftUiView)
-            
-            NSLayoutConstraint.activate(
-                [
-                    swiftUiView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
-                    swiftUiView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
-                    swiftUiView.topAnchor.constraint(equalTo: _view.topAnchor),
-                    swiftUiView.bottomAnchor.constraint(equalTo:  _view.bottomAnchor)
-                ])
-            
-            vc.didMove(toParent: topController)
-        }
-    
-    func onMethodCalled(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+
+    func view() -> UIView {
+        return objectCaptureView
+    }
+
+    private func createNativeView(view _view: UIView) {
+        // Create the native view for either UIKit or SwiftUI and add it to the Flutter view.
+
+        // FOR SWIFTUI
+//        guard let session = session else {
+//            print("ObjectCaptureSession is not initialized. Call startSession first.")
+//            return
+//        }
+        
+        let captureView = UIHostingController(rootView: CaptureView())
+        let swiftUIView = captureView.view!
+        swiftUIView.translatesAutoresizingMaskIntoConstraints = false
+
+        _view.addSubview(swiftUIView)
+
+        NSLayoutConstraint.activate([
+            swiftUIView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
+            swiftUIView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
+            swiftUIView.topAnchor.constraint(equalTo: _view.topAnchor),
+            swiftUIView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
+        ])
+    }
+
+    private func onMethodCalled(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? [String: Any]
 
-        switch call.method {
-        case "getPlatformVersion":
-          result("iOS " + UIDevice.current.systemVersion)
-        default:
-          result(FlutterMethodNotImplemented)
+        if session == nil && call.method != "startSession" {
+            logger.log("plugin is not initialized properly")
+            result(nil)
+            return
         }
+        switch call.method {
+        case "startSession":
+            Task { @MainActor in
+                 await startSession(result: result)
+            }
+        case "stopSession":
+            Task { @MainActor in
+                 stopSession(result: result)
+            }
+        default:
+            result(FlutterMethodNotImplemented)
+        }
+    }
+
+    @MainActor
+    private func startSession(result: @escaping FlutterResult) async {
+        session = ObjectCaptureSession()
+        
+        // Create and add CaptureView
+        let captureView = UIHostingController(rootView: CaptureView(session: session!))
+        let swiftUIView = captureView.view!
+        swiftUIView.translatesAutoresizingMaskIntoConstraints = false
+        
+        objectCaptureView.addSubview(swiftUIView)
+        
+        NSLayoutConstraint.activate([
+            swiftUIView.leadingAnchor.constraint(equalTo: objectCaptureView.leadingAnchor),
+            swiftUIView.trailingAnchor.constraint(equalTo: objectCaptureView.trailingAnchor),
+            swiftUIView.topAnchor.constraint(equalTo: objectCaptureView.topAnchor),
+            swiftUIView.bottomAnchor.constraint(equalTo: objectCaptureView.bottomAnchor)
+        ])
+        
+        result(nil)
+    }
+
+    @MainActor
+    private func stopSession(result: @escaping FlutterResult) {
+        //        session?.finish()
+        session = nil
+        result(nil)
     }
 }
