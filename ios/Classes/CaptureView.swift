@@ -17,7 +17,7 @@ enum CaptureMode: Equatable {
 }
 
 struct CaptureView: View {
-    @State var session: ObjectCaptureSession = ObjectCaptureSession() {
+    @State private var session: ObjectCaptureSession = ObjectCaptureSession() {
         willSet {
             detachListeners()
         }
