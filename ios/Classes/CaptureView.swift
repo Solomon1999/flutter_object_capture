@@ -17,7 +17,7 @@ enum CaptureMode: Equatable {
 }
 
 struct CaptureView: View {
-    @State private var session: ObjectCaptureSession = ObjectCaptureSession() {
+    @State var session: ObjectCaptureSession = ObjectCaptureSession() {
         willSet {
             detachListeners()
         }
@@ -25,6 +25,7 @@ struct CaptureView: View {
             attachListeners()
         }
     }
+    @State var captureFolderManager: CaptureFolderManager?
     
     @State private var currentFeedback: Set<Feedback> = []
     
@@ -36,9 +37,10 @@ struct CaptureView: View {
     @State private var isObjectFlipped = false
     
     @State private var captureMode = CaptureMode.object
-    @State private(set) var captureFolderManager: CaptureFolderManager?
     @State private var showReconstructionView: Bool = false
     @State private var showShotLocations: Bool = false
+    
+    
     
     private func attachListeners() {
         logger.debug("Attaching listeners...")

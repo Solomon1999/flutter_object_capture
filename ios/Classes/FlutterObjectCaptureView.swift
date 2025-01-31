@@ -19,7 +19,7 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
     init(
         withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger
     ) {
-        objectCaptureView = UIView(frame: frame)
+        objectCaptureView = UIView()
         channel = FlutterMethodChannel(name: "flutter_object_capture_\(viewId)", binaryMessenger: msg)
 
         super.init()
@@ -56,7 +56,7 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
     }
 
     private func onMethodCalled(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        let arguments = call.arguments as? [String: Any]
+        _ = call.arguments as? [String: Any]
 
         if session == nil && call.method != "startSession" {
             logger.log("plugin is not initialized properly")
@@ -80,9 +80,24 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
     @MainActor
     private func startSession(result: @escaping FlutterResult) async {
         session = ObjectCaptureSession()
+        var captureFolderManager = try? CaptureFolderManager()
+        var config = ObjectCaptureSession.Configuration()
+        config.isOverCaptureEnabled = true
+        if let folderManager = captureFolderManager {
+            config.checkpointDirectory = folderManager.checkpointFolder
+            // Starts the initial segment and sets the output locations.
+            session?.start(imagesDirectory: folderManager.imagesFolder,
+                          configuration: config)
+        } else {
+            result(
+                FlutterError(
+                    code: "UNAVAILABLE",message: "Battery level not available.",
+                    details: nil)
+            )
+        }
         
         // Create and add CaptureView
-        let captureView = UIHostingController(rootView: CaptureView(session: session!))
+        let captureView = UIHostingController(rootView: CaptureView())
         let swiftUIView = captureView.view!
         swiftUIView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -94,7 +109,7 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
             swiftUIView.topAnchor.constraint(equalTo: objectCaptureView.topAnchor),
             swiftUIView.bottomAnchor.constraint(equalTo: objectCaptureView.bottomAnchor)
         ])
-        
+        session?.start(imagesDirectory: <#T##URL#>, configuration: <#T##ObjectCaptureSession.Configuration#>)
         result(nil)
     }
 
