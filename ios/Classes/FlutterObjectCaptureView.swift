@@ -80,7 +80,7 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
     @MainActor
     private func startSession(result: @escaping FlutterResult) async {
         session = ObjectCaptureSession()
-        var captureFolderManager = try? CaptureFolderManager()
+        let captureFolderManager = try? CaptureFolderManager()
         var config = ObjectCaptureSession.Configuration()
         config.isOverCaptureEnabled = true
         if let folderManager = captureFolderManager {
@@ -88,6 +88,21 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
             // Starts the initial segment and sets the output locations.
             session?.start(imagesDirectory: folderManager.imagesFolder,
                           configuration: config)
+            // Create and add CaptureView
+            let captureView = UIHostingController(rootView: CaptureView(
+                session: session!, captureFolderManager: folderManager
+            ))
+            let swiftUIView = captureView.view!
+            swiftUIView.translatesAutoresizingMaskIntoConstraints = false
+            
+            objectCaptureView.addSubview(swiftUIView)
+            
+            NSLayoutConstraint.activate([
+                swiftUIView.leadingAnchor.constraint(equalTo: objectCaptureView.leadingAnchor),
+                swiftUIView.trailingAnchor.constraint(equalTo: objectCaptureView.trailingAnchor),
+                swiftUIView.topAnchor.constraint(equalTo: objectCaptureView.topAnchor),
+                swiftUIView.bottomAnchor.constraint(equalTo: objectCaptureView.bottomAnchor)
+            ])
         } else {
             result(
                 FlutterError(
@@ -96,20 +111,7 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
             )
         }
         
-        // Create and add CaptureView
-        let captureView = UIHostingController(rootView: CaptureView())
-        let swiftUIView = captureView.view!
-        swiftUIView.translatesAutoresizingMaskIntoConstraints = false
         
-        objectCaptureView.addSubview(swiftUIView)
-        
-        NSLayoutConstraint.activate([
-            swiftUIView.leadingAnchor.constraint(equalTo: objectCaptureView.leadingAnchor),
-            swiftUIView.trailingAnchor.constraint(equalTo: objectCaptureView.trailingAnchor),
-            swiftUIView.topAnchor.constraint(equalTo: objectCaptureView.topAnchor),
-            swiftUIView.bottomAnchor.constraint(equalTo: objectCaptureView.bottomAnchor)
-        ])
-        session?.start(imagesDirectory: <#T##URL#>, configuration: <#T##ObjectCaptureSession.Configuration#>)
         result(nil)
     }
 

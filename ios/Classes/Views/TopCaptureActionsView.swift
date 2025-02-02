@@ -22,7 +22,7 @@ struct TopCaptureActionsView: View, OverlayButtons {
     var body: some View {
         VStack {
             HStack {
-                CaptureCancelButton()
+                // CaptureCancelButton()
                 Spacer()
                 if !isCapturingStarted(state: session.state) {
                     CaptureFolderButton(

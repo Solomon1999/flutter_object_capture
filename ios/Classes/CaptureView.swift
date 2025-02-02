@@ -17,7 +17,7 @@ enum CaptureMode: Equatable {
 }
 
 struct CaptureView: View {
-    @State var session: ObjectCaptureSession = ObjectCaptureSession() {
+    @State var session: ObjectCaptureSession {
         willSet {
             detachListeners()
         }
@@ -26,6 +26,7 @@ struct CaptureView: View {
         }
     }
     @State var captureFolderManager: CaptureFolderManager?
+    var onCaptureComplete: (String) -> Void
     
     @State private var currentFeedback: Set<Feedback> = []
     
@@ -40,6 +41,7 @@ struct CaptureView: View {
     @State private var showReconstructionView: Bool = false
     @State private var showShotLocations: Bool = false
     
+    @State private var photoSession: PhotogrammetrySession?
     
     
     private func attachListeners() {
@@ -98,25 +100,60 @@ struct CaptureView: View {
                 )
                 // .showShotLocations(showShotLocations)
                 Spacer()
-                Button(action: {
-                    session.startCapturing()
-                }) {
-                    Text("Rescan")
-                }
-                Button(action: {
-                    session.finish()
-                    showReconstructionView = true
-                }) {
-                    Text("Finish")
+                HStack(spacing: 12) {
+                    Button(action: {
+                        session.startCapturing()
+                    }) {
+                        Text("Rescan")
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 25)
+                            .padding(.vertical, 20)
+                            .clipShape(Capsule())
+                    }
+                    Button(action: {
+                        session.finish()
+                        if let folderManager = captureFolderManager {
+                            var config = PhotogrammetrySession.Configuration()
+                            if captureMode == .area {
+                                config.isObjectMaskingEnabled = false
+                            }
+                            
+                            config.checkpointDirectory = folderManager.checkpointFolder
+                            var photoSession = try? PhotogrammetrySession(
+                                input: folderManager.imagesFolder,
+                                configuration: config
+                            )
+                        } else {
+                            preconditionFailure("Capture Folder Manager unexpectedly nil!")
+                        }
+                        showReconstructionView = true
+                    }) {
+                        Text("Finish")
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 25)
+                            .padding(.vertical, 20)
+                            .background(.blue)
+                            .clipShape(Capsule())
+                    }
                 }
             }
             .sheet(isPresented: $showReconstructionView) {
                 if let folderManager = captureFolderManager {
-                    ReconstructionView(
-                        outputFile: folderManager.modelsFolder.appendingPathComponent("model-mobile.usdz"))
-                    .interactiveDismissDisabled()
+                    if let photoSession = photoSession {
+                        ReconstructionView(
+                            outputFile: folderManager.modelsFolder.appendingPathComponent("model-mobile.usdz"),
+                            photogrammetrySession: photoSession
+                        )
+                        .interactiveDismissDisabled()
+                    } else {
+                        preconditionFailure("Failed to create Photogrammetry session")
+                    }
                 } else {
-                    preconditionFailure("captureFolderManager unexpectedly nil!")
+                    preconditionFailure("Capture Folder Manager unexpectedly nil!")
                 }
             }
         } else {

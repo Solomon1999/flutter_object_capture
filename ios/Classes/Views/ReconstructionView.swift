@@ -176,6 +176,7 @@ private struct ProgressBarView: View {
 
 struct ReconstructionView: View {
     let outputFile: URL
+    var photogrammetrySession: PhotogrammetrySession
 
     @State private var completed: Bool = false
     @State private var cancelled: Bool = false
@@ -191,6 +192,7 @@ struct ReconstructionView: View {
                 })
             } else {
                 ReconstructionProgressView(
+                    photogrammetrySession: photogrammetrySession,
                     outputFile: outputFile,
                     completed: $completed,
                     cancelled: $cancelled
