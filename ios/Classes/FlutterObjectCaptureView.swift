@@ -41,20 +41,18 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
 //            return
 //        }
         
-        let captureView = UIHostingController(rootView: CaptureView(
-            session: se
-        ))
-        let swiftUIView = captureView.view!
-        swiftUIView.translatesAutoresizingMaskIntoConstraints = false
-
-        _view.addSubview(swiftUIView)
-
-        NSLayoutConstraint.activate([
-            swiftUIView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
-            swiftUIView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
-            swiftUIView.topAnchor.constraint(equalTo: _view.topAnchor),
-            swiftUIView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
-        ])
+//        let captureView = UIHostingController(rootView: CaptureView())
+//        let swiftUIView = captureView.view!
+//        swiftUIView.translatesAutoresizingMaskIntoConstraints = false
+//
+//        _view.addSubview(swiftUIView)
+//
+//        NSLayoutConstraint.activate([
+//            swiftUIView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
+//            swiftUIView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
+//            swiftUIView.topAnchor.constraint(equalTo: _view.topAnchor),
+//            swiftUIView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
+//        ])
     }
 
     private func onMethodCalled(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -78,6 +76,12 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
             result(FlutterMethodNotImplemented)
         }
     }
+    
+    func sendToFlutter(_ method: String, arguments: Any?) {
+        DispatchQueue.main.async {
+            self.channel.invokeMethod(method, arguments: arguments)
+        }
+    }
 
     @MainActor
     private func startSession(result: @escaping FlutterResult) async {
@@ -92,7 +96,10 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
                           configuration: config)
             // Create and add CaptureView
             let captureView = UIHostingController(rootView: CaptureView(
-                session: session!, captureFolderManager: folderManager
+                session: session!, captureFolderManager: folderManager,
+                onProcessComplete: { resultPath in
+                    self.sendToFlutter("onCompleted", arguments: resultPath)
+                }
             ))
             let swiftUIView = captureView.view!
             swiftUIView.translatesAutoresizingMaskIntoConstraints = false
@@ -119,7 +126,7 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
 
     @MainActor
     private func stopSession(result: @escaping FlutterResult) {
-        //        session?.finish()
+        session?.finish()
         session = nil
         result(nil)
     }
