@@ -138,14 +138,16 @@ class _ObjectCapturePageState extends State<ObjectCapturePage> {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ModelViewer(
-                backgroundColor: const Color.fromARGB(0xFF, 0xEE, 0xEE, 0xEE),
-                src: path,
-                iosSrc: path,
-                alt: 'A 3D model of an astronaut',
-                ar: true,
-                autoRotate: true,
-                disableZoom: true,
+              Expanded(
+                child: ModelViewer(
+                  backgroundColor: const Color.fromARGB(0xFF, 0xEE, 0xEE, 0xEE),
+                  src: path,
+                  iosSrc: path,
+                  alt: 'A 3D model of an astronaut',
+                  ar: true,
+                  autoRotate: true,
+                  disableZoom: true,
+                ),
               ),
             ],
           );

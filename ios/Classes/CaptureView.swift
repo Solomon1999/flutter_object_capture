@@ -157,6 +157,7 @@ struct CaptureView: View {
                             outputFile: folderManager.modelsFolder.appendingPathComponent("model-mobile.usdz"),
                             photogrammetrySession: photoSession,
                             onComplete: { outputFilePath in
+                                showReconstructionView = false
                                 onProcessComplete(outputFilePath.absoluteString)
                             }
                         )
