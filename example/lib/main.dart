@@ -62,31 +62,65 @@ class _MyAppState extends State<MyApp> {
         body: Builder(
           builder: (context) {
             return SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text('Running on: $_platformVersion\n'),
-                  Row(
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return ObjectCapturePage(
-                                  onObjectCaptured: (url) {
-                                    log("Captured Object Path: $url");
-                                  },
-                                );
-                              },
-                            ),
-                          );
-                        },
-                        child: const Text("Scan Object"),
-                      )
-                    ],
-                  )
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('Running on: $_platformVersion\n'),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return ObjectCapturePage(
+                                    onObjectCaptured: (url) {
+                                      log("Captured Object Path: $url");
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        builder: (context) {
+                                          return Column(
+                                            children: [
+                                              Expanded(
+                                                child: ModelViewer(
+                                                  backgroundColor:
+                                                      const Color.fromARGB(0xFF,
+                                                          0xEE, 0xEE, 0xEE),
+                                                  src: url,
+                                                  iosSrc: url,
+                                                  alt:
+                                                      'An Object Captured Object',
+                                                  ar: true,
+                                                  autoRotate: true,
+                                                  disableZoom: true,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 16),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.maybePop(context);
+                                                },
+                                                child: const Text("Done"),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          child: const Text("Scan Object"),
+                        )
+                      ],
+                    )
+                  ],
+                ),
               ),
             );
           },
@@ -132,27 +166,7 @@ class _ObjectCapturePageState extends State<ObjectCapturePage> {
         );
         return;
       }
-      showModalBottomSheet(
-        context: context,
-        builder: (context) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                child: ModelViewer(
-                  backgroundColor: const Color.fromARGB(0xFF, 0xEE, 0xEE, 0xEE),
-                  src: path,
-                  iosSrc: path,
-                  alt: 'A 3D model of an astronaut',
-                  ar: true,
-                  autoRotate: true,
-                  disableZoom: true,
-                ),
-              ),
-            ],
-          );
-        },
-      );
+      widget.onObjectCaptured(path);
     };
   }
 
