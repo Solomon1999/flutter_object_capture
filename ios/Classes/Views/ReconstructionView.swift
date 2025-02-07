@@ -177,6 +177,7 @@ private struct ProgressBarView: View {
 struct ReconstructionView: View {
     let outputFile: URL
     var photogrammetrySession: PhotogrammetrySession
+    var onComplete: (URL) -> Void
 
     @State private var completed: Bool = false
     @State private var cancelled: Bool = false
@@ -185,7 +186,7 @@ struct ReconstructionView: View {
         VStack {
             if completed && !cancelled {
                 ARQuickLookController(modelFile: outputFile, endCaptureCallback: {
-                    
+                    onComplete(outputFile)
                 })
                 .onAppear(perform: {
                     UIApplication.shared.isIdleTimerDisabled = false

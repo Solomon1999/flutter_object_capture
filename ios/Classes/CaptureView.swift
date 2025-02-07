@@ -26,7 +26,7 @@ struct CaptureView: View {
         }
     }
     @State var captureFolderManager: CaptureFolderManager?
-    var onCaptureComplete: (String) -> Void
+    var onProcessComplete: (String) -> Void
     
     @State private var currentFeedback: Set<Feedback> = []
     
@@ -91,6 +91,30 @@ struct CaptureView: View {
         currentFeedback = feedback
     }
     
+    private func startObjectReconstruction() {
+        session.finish()
+        if let folderManager = captureFolderManager {
+            var config = PhotogrammetrySession.Configuration()
+            if captureMode == .area {
+                config.isObjectMaskingEnabled = false
+            }
+            
+            config.checkpointDirectory = folderManager.checkpointFolder
+            photoSession = try? PhotogrammetrySession(
+                input: folderManager.imagesFolder,
+                configuration: config
+            )
+            if let photoSession = photoSession {
+                showReconstructionView = true
+            } else {
+                logger.log("Failed to create PhotgrammetrySession")
+            }
+        } else {
+            logger.log("Capture Folder Manager unexpectedly nil!")
+        }
+        
+    }
+    
     var body: some View {
         
         if session.userCompletedScanPass {
@@ -113,22 +137,7 @@ struct CaptureView: View {
                             .clipShape(Capsule())
                     }
                     Button(action: {
-                        session.finish()
-                        if let folderManager = captureFolderManager {
-                            var config = PhotogrammetrySession.Configuration()
-                            if captureMode == .area {
-                                config.isObjectMaskingEnabled = false
-                            }
-                            
-                            config.checkpointDirectory = folderManager.checkpointFolder
-                            var photoSession = try? PhotogrammetrySession(
-                                input: folderManager.imagesFolder,
-                                configuration: config
-                            )
-                        } else {
-                            preconditionFailure("Capture Folder Manager unexpectedly nil!")
-                        }
-                        showReconstructionView = true
+                        startObjectReconstruction()
                     }) {
                         Text("Finish")
                             .font(.body)
@@ -146,15 +155,20 @@ struct CaptureView: View {
                     if let photoSession = photoSession {
                         ReconstructionView(
                             outputFile: folderManager.modelsFolder.appendingPathComponent("model-mobile.usdz"),
-                            photogrammetrySession: photoSession
+                            photogrammetrySession: photoSession,
+                            onComplete: { outputFilePath in
+                                onProcessComplete(outputFilePath.absoluteString)
+                            }
                         )
                         .interactiveDismissDisabled()
-                    } else {
-                        preconditionFailure("Failed to create Photogrammetry session")
                     }
-                } else {
-                    preconditionFailure("Capture Folder Manager unexpectedly nil!")
+//                    else {
+//                        preconditionFailure("Failed to create Photogrammetry session")
+//                    }
                 }
+//                else {
+//                    preconditionFailure("Capture Folder Manager unexpectedly nil!")
+//                }
             }
         } else {
             ZStack {
