@@ -41,7 +41,9 @@ class FlutterObjectCaptureView: NSObject, FlutterPlatformView {
 //            return
 //        }
         
-        let captureView = UIHostingController(rootView: CaptureView())
+        let captureView = UIHostingController(rootView: CaptureView(
+            session: se
+        ))
         let swiftUIView = captureView.view!
         swiftUIView.translatesAutoresizingMaskIntoConstraints = false
 
