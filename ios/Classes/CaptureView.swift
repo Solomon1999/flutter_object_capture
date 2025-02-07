@@ -126,9 +126,20 @@ struct CaptureView: View {
                 Spacer()
                 HStack(spacing: 12) {
                     Button(action: {
-                        session.startCapturing()
+                        session.beginNewScanPass()
                     }) {
                         Text("Rescan")
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 25)
+                            .padding(.vertical, 20)
+                            .clipShape(Capsule())
+                    }
+                    Button(action: {
+                        session.beginNewScanPassAfterFlip()
+                    }) {
+                        Text("Flip")
                             .font(.body)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
